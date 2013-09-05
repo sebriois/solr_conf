@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema name="sequences" version="1.5">
+  <uniqueKey>id</uniqueKey>
+  <fields>
+    <field name="id"            type="string"       indexed="true" stored="true" required="true"  multiValued="false" />
+    <field name="product"       type="text_en"      indexed="true" stored="true" required="true"  multiValued="false" />
+    <field name="reference"     type="string"       indexed="true" stored="true" required="true"  multiValued="false" />
+    <field name="provider"      type="text_general" indexed="true" stored="true" required="true"  multiValued="false" />
+    <field name="origin"        type="text_general" indexed="true" stored="true" required="false"  multiValued="false" />
+    <field name="packaging"     type="string"       indexed="true" stored="true" required="false"  multiValued="false" />
+    <field name="offer_nb"      type="string"       indexed="true" stored="true" required="false"  multiValued="false" />
+    <field name="nomenclature"  type="string"       indexed="true" stored="true" required="false"  multiValued="false" />
+    <field name="category"      type="text_general" indexed="true" stored="true" required="false"  multiValued="false" />
+    <field name="sub_category"  type="text_general" indexed="true" stored="true" required="false"  multiValued="false" />
+    
+    <!-- used for autocompletion -->
+    <field name="product_auto" type="text_auto" indexed="true" stored="false" multiValued="false" />
+    
+    <field name="text"  type="text_general" indexed="true" stored="false" multiValued="true" />
+
+    <!-- used for faceting : fields type must be set as 'string' -->
+    <field name="provider_facet" type="string" indexed="true" stored="false" required="false" multiValued="false" />
+    <field name="category_facet" type="string" indexed="true" stored="false" required="false" multiValued="false" />
+    <field name="sub_category_facet" type="string" indexed="true" stored="false" required="false" multiValued="false" />
+
+    <dynamicField name="has_*"  type="boolean" indexed="true" stored="true" required="false" multiValued="false" />   
+    <dynamicField name="is_*"   type="boolean" indexed="true" stored="true" required="false" multiValued="false" />
+    
+    <field name="_version_" type="long" indexed="true" stored="true"/>
+  </fields>
+  
+  <!-- use copyField for faceting -->
+  <copyField source="provider" dest="provider_facet" />
+  <copyField source="category" dest="category_facet" />
+  <copyField source="sub_category" dest="sub_category_facet" />
+  
+  <copyField source="product" dest="product_auto" />
+  
+  <copyField source="*" dest="text" />
+  
+  <types>
+    <fieldType name="string"  class="solr.StrField"         sortMissingLast="true" />
+    <fieldType name="boolean" class="solr.BoolField"        sortMissingLast="true"/>
+    <fieldType name="int"     class="solr.TrieIntField"     precisionStep="0" positionIncrementGap="0"/>
+    <fieldType name="long"    class="solr.TrieLongField"    precisionStep="0" positionIncrementGap="0"/>
+    
+    <fieldType name="text_auto" class="solr.TextField">
+     <analyzer>
+      <tokenizer class="solr.KeywordTokenizerFactory"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+     </analyzer>
+    </fieldType>
+    
+    <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true" />
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+      <analyzer type="query">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt" enablePositionIncrements="true" />
+        <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100">
+      <analyzer type="index">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.StopFilterFactory"
+                ignoreCase="true"
+                words="lang/stopwords_en.txt"
+                enablePositionIncrements="true"
+                />
+        <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.EnglishPossessiveFilterFactory"/>
+        <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+        <filter class="solr.PorterStemFilterFactory"/>
+      </analyzer>
+      <analyzer type="query">
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+        <filter class="solr.StopFilterFactory"
+                ignoreCase="true"
+                words="lang/stopwords_en.txt"
+                enablePositionIncrements="true"
+                />
+        <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.EnglishPossessiveFilterFactory"/>
+        <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+        <filter class="solr.PorterStemFilterFactory"/>
+      </analyzer>
+    </fieldType>
+  </types>
+</schema>
